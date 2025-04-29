@@ -1,0 +1,100 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Client {
+  id              String            @id @default(uuid()) @map("_id")
+  name            String
+  gender          String
+  email           String            @unique
+  username        String            @unique
+  contactNumber   String
+  country         String
+  imageUrl        String?
+  password        String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  reviews         Review[]
+  tourGudeReviews TourGuideReview[]
+  travelPlans     TourPlan[]
+}
+
+model TourGuide {
+  id            String            @id @default(uuid()) @map("_id")
+  name          String
+  email         String            @unique
+  nicNumber     String            @unique
+  contactNumber String
+  username      String            @unique
+  password      String
+  isActive      Boolean           @default(false)
+  imageUrl      String?
+  isDeleted     Boolean           @default(false)
+  serviceAreas  String[]
+  languages     String[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  reviews       TourGuideReview[]
+
+  @@map("tour_guides")
+}
+
+model TourGuideReview {
+  id          String    @id @default(uuid()) @map("_id")
+  tourGuideId String
+  tourGuide   TourGuide @relation(fields: [tourGuideId], references: [id])
+  clientId    String
+  client      Client    @relation(fields: [clientId], references: [id])
+  numOfStars  Int
+  comment     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Review {
+  id         String   @id @default(uuid()) @map("_id")
+  review     String
+  numOfStars Int
+  clientId   String
+  client     Client   @relation(fields: [clientId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("reviews")
+}
+
+model Destination {
+  id          String   @id @default(uuid()) @map("_id")
+  name        String
+  description String
+  imageUrl    String
+  location    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("destinations")
+}
+
+model TourPlan {
+  id            String   @id @default(uuid()) @map("_id")
+  clientId      String?
+  client        Client?  @relation(fields: [clientId], references: [id])
+  startLocation String
+  endLocation   String
+  startDate     DateTime
+  endDate       DateTime
+  vehicle       String
+  numOfMembers  Int
+  travelType    String // family, couple, friends, solo, etc.
+  description   String?
+  isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("tour_plans")
+}
